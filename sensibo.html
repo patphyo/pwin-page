@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+   <head>
+      <title>Line Chart Multiple Axes</title>
+      <script src="https://cdn.jsdelivr.net/npm/chart.js@2.8.0/dist/Chart.min.js"></script>
+      <script src="utils.js"></script>
+      <script src="moment.js"></script>
+      <script
+         src="https://code.jquery.com/jquery-3.4.1.min.js"
+         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+         crossorigin="anonymous"></script>
+      <style>
+         canvas {
+         -moz-user-select: none;
+         -webkit-user-select: none;
+         -ms-user-select: none;
+         }
+         .loader {
+         position: absolute;
+         height: 100px;
+         width: 100px;
+         top: 50%;
+         left: 50%;
+         margin-left: -50px;
+         margin-top: -50px;
+         background: url(/link/to/your/image);
+         background-size: 100%;
+         border: 16px solid #f3f3f3;
+         border-radius: 50%;
+         border-top: 16px solid #3498db;
+         -webkit-animation: spin 2s linear infinite; /* Safari */
+         animation: spin 2s linear infinite;
+         }
+         /* Safari */
+         @-webkit-keyframes spin {
+         0% { -webkit-transform: rotate(0deg); }
+         100% { -webkit-transform: rotate(360deg); }
+         }
+         @keyframes spin {
+         0% { transform: rotate(0deg); }
+         100% { transform: rotate(360deg); }
+         }
+      </style>
+   </head>
+   <body>
+      <div style="width:75%;">
+         <div class="loader" id="loader"></div>
+         <canvas id="canvas"></canvas>
+      </div>
+      <script>
+         var lineChartData = {
+         	labels: [],
+         	datasets: [{
+         		label: 'Temperature',
+         		borderColor: window.chartColors.red,
+         		backgroundColor: window.chartColors.red,
+         		fill: false,
+         		data: [
+         		],
+         		yAxisID: 'y-axis-1',
+         		pointRadius: 0
+         	}, {
+         		label: 'Humidity',
+         		borderColor: window.chartColors.blue,
+         		backgroundColor: window.chartColors.blue,
+         		fill: false,
+         		data: [
+         		],
+         		yAxisID: 'y-axis-2',
+         		pointRadius: 0
+         	}]
+         };
+         
+         window.onload = function() {
+         	var ctx = document.getElementById('canvas').getContext('2d');
+         	$.ajax({
+         	  type: 'GET',
+         	  url: 'https://pwin.herokuapp.com/sensibo-api/1',
+                 dataType: 'json',
+                 cors: true ,
+                 contentType:'application/json',
+                 secure: true,
+                 headers: {
+                   'Access-Control-Allow-Origin': '*',
+                 },
+         	  success: function(data) {				
+         		for (var i = 0, j = data.result.temperature.length; i < j; i ++){
+         			lineChartData.datasets[0].data.push (data.result.temperature[i].value);
+         			lineChartData.datasets[1].data.push (data.result.humidity[i].value);
+         			lineChartData.labels.push (moment(data.result.temperature[i].time).format('h:mm:ss a'));
+         		}
+         		window.myLine = Chart.Line(ctx, {
+         		data: lineChartData,
+         		options: {
+         			responsive: true,
+         			tooltips: {
+         			  mode: 'index',
+         			  intersect: false
+         		   },
+         		   hover: {
+         			  mode: 'index',
+         			  intersect: false
+         		   },
+         			stacked: false,
+         			title: {
+         				display: true,
+         				text: 'Bedroom Temperature'
+         			},
+         			scales: {
+         				yAxes: [{
+         					type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+         					display: true,
+         					position: 'left',
+         					id: 'y-axis-1',
+         				}, {
+         					type: 'linear', // only linear but allow scale type registration. This allows extensions to exist solely for log scale for instance
+         					display: true,
+         					position: 'right',
+         					id: 'y-axis-2',
+         
+         					// grid line settings
+         					gridLines: {
+         						drawOnChartArea: false, // only want the grid lines for one axis to show up
+         					},
+         				}]
+         			}
+         		}
+         	});
+         	document.getElementById('loader').style.display = "none";
+         	  },
+         	  error: function(error) {
+         		console.log("FAIL....=================");
+         	  }
+         	});
+         	
+         	
+         };
+      </script>
+   </body>
+</html>
