@@ -1562,8 +1562,6 @@ input[type="text"] {
 	display: flex;
 	flex-wrap: wrap;
 	justify-content: space-between;
-	margin: 12.8rem -.8rem 3.2rem;
-	padding-top: 3.2rem
 }
 
 .l-Footer a {
